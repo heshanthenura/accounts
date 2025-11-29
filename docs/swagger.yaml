@@ -1,0 +1,74 @@
+host: auth.sliitmozilla.org
+info:
+  contact: {}
+  description: API documentation for the authentication service used across all sliitmozilla
+  title: SLIIT Mozilla Club Auth Service
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Endpoint to log in a user with credentials or session token
+      parameters:
+      - description: Username
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: Password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful, returns session info
+          schema:
+            type: object
+        "400":
+          description: Invalid request or missing parameters
+          schema:
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            type: object
+        "500":
+          description: Server error
+          schema:
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Endpoint to log out a user and invalidate their session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            type: object
+        "401":
+          description: Unauthorized / session not found
+          schema:
+            type: object
+        "500":
+          description: Server error
+          schema:
+            type: object
+      summary: Logout user
+      tags:
+      - Auth
+schemes:
+- https
+- http
+swagger: "2.0"

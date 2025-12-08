@@ -1,0 +1,134 @@
+package handlers
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+
+	"github.com/sliitmozilla/accounts/db/models"
+	errors "github.com/sliitmozilla/accounts/errors"
+	"github.com/sliitmozilla/accounts/helpers"
+)
+
+// @tags        Roles
+// @summary		Get all roles
+// @description Get all roles. Protected route
+// @security	AccessToken
+// @accept      json
+// @produce     json
+// @failure     500 {object} object "Server error"
+// @router      /roles [GET]
+func GetRoles(w http.ResponseWriter, r *http.Request) {
+	roles, err := models.RoleModel{}.SelectAll()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	helpers.Response(w, http.StatusOK, roles)
+}
+
+// @tags        Roles
+// @summary		Create a new role
+// @description Create a new role. Protected route
+// @security	AccessToken
+// @accept      json
+// @produce     json
+// @failure     500 {object} object "Server error"
+// @router      /roles [POST]
+func CreateRole(w http.ResponseWriter, r *http.Request) {
+	var role models.RoleModel
+	if err := json.NewDecoder(r.Body).Decode(&role); err != nil {
+		helpers.Response(w, http.StatusBadRequest, "Invalid or empty body")
+		return
+	}
+	if role.Name == "admin" {
+		helpers.Response(w, http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		return
+	}
+	if role.Name == "" {
+		helpers.Response(w, http.StatusBadRequest, "name cannot be empty")
+		return
+	}
+	if _, err := role.Insert(); err != nil {
+		if ve, ok := err.(errors.DuplicateError); ok {
+			helpers.Response(w, http.StatusConflict, ve.Error())
+			return
+		}
+		log.Println(err.Error())
+		helpers.Response(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	helpers.Response(w, http.StatusCreated, http.StatusText(http.StatusCreated))
+}
+
+// @tags        Roles
+// @summary		Update a role
+// @description Update a role. Protected route
+// @security	AccessToken
+// @accept      json
+// @produce     json
+// @failure     500 {object} object "Server error"
+// @router      /roles/{role} [PATCH]
+func UpdateRole(w http.ResponseWriter, r *http.Request) {
+	role := r.PathValue("role")
+	originalRole := models.RoleModel{Name: role}
+	var newRole models.RoleModel
+
+	if role == "admin" {
+		helpers.Response(w, http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&newRole); err != nil {
+		helpers.Response(w, http.StatusBadRequest, "Invalid or empty body")
+		return
+	}
+	if newRole.Name == "admin" {
+		helpers.Response(w, http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		return
+	}
+	if newRole.Name == "" {
+		helpers.Response(w, http.StatusBadRequest, "name cannot be empty")
+		return
+	}
+
+	rows, err := originalRole.Update(newRole)
+	if err != nil {
+		log.Println(err.Error())
+		helpers.Response(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+	if rows == 0 {
+		helpers.Response(w, http.StatusNotFound, "Role not found")
+		return
+	}
+	helpers.Response(w, http.StatusOK, http.StatusText(http.StatusOK))
+}
+
+// @tags        Roles
+// @summary		Delete a role
+// @description Delete a role. Protected route
+// @security	AccessToken
+// @accept      json
+// @produce     json
+// @failure     500 {object} object "Server error"
+// @router      /roles/{delete} [DELETE]
+func DeleteRole(w http.ResponseWriter, r *http.Request) {
+	role := models.RoleModel{Name: r.PathValue("role")}
+	if role.Name == "admin" {
+		helpers.Response(w, http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		return
+	}
+	rows, err := role.Delete()
+	if err != nil {
+		log.Println(err.Error())
+		helpers.Response(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+	if rows == 0 {
+		helpers.Response(w, http.StatusNotFound, "Role not found")
+		return
+	}
+	helpers.Response(w, http.StatusOK, http.StatusText(http.StatusOK))
+}

@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	_ "github.com/sliitmozilla/auth/docs"
+	_ "github.com/sliitmozilla/accounts/docs"
 )
 
 func SetupRoutes() *chi.Mux {
@@ -19,12 +19,14 @@ func SetupRoutes() *chi.Mux {
 	r.Use(middleware.Logger)
 
 	r.Mount("/", AuthRoutes{}.Routes())
+	r.Mount("/users", UsersRoute{}.Routes())
+	r.Mount("/roles", RolesRoutes{}.Routes())
 
 	// Swagger docs
 	fs := http.FileServer(http.Dir(filepath.Join(dir, "docs")))
-	r.Handle("/docs/swagger.json", http.StripPrefix("/docs", fs))
+	r.Handle("/docs/swagger.json", http.StripPrefix("/api/docs", fs))
 	r.Get("/docs/*", httpSwagger.Handler(
-		httpSwagger.URL("/docs/swagger.json"),
+		httpSwagger.URL("/api/docs/swagger.json"),
 	))
 
 	return r

@@ -1,9 +1,9 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
+    { "source": "/api/docs/swagger.json", "destination": "/docs/swagger.json" },
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/assets/(.*)", "destination": "/frontend/dist/assets/$1" },
+    { "source": "/favicon.svg", "destination": "/frontend/dist/favicon.svg" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -1,10 +1,38 @@
-host: auth.sliitmozilla.org
+basePath: /api
+consumes:
+- application/json
+host: accounts.sliitmozilla.org
 info:
-  contact: {}
+  contact:
+    email: infosliitmcc@gmail.com
+    name: Mozilla Campus Club of SLIIT
+    url: https://www.sliitmozilla.org/contact/
   description: API documentation for the authentication service used across all sliitmozilla
-  title: SLIIT Mozilla Club Auth Service
+  license:
+    name: MPL-2.0
+    url: https://github.com/Mozilla-Campus-Club-of-SLIIT/accounts/blob/main/LICENSE
+  title: sliitmozilla Auth Service
   version: "1.0"
 paths:
+  /authorize:
+    get:
+      consumes:
+      - application/json
+      description: Initiate the authentication flow with the auth service. Any external
+        service should visit this route with a valid redirect If the user is already
+        logged in with the auth service, the auth service will redirect the user back
+        to the provided url with a temporary token - that should be used to complete
+        the authentication \
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      summary: Initiate the authentication flow
+      tags:
+      - Auth
   /login:
     post:
       consumes:
@@ -68,6 +96,256 @@ paths:
       summary: Logout user
       tags:
       - Auth
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Get all roles. Protected route
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Get all roles
+      tags:
+      - Roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new role. Protected route
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Create a new role
+      tags:
+      - Roles
+  /roles/{delete}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a role. Protected route
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Delete a role
+      tags:
+      - Roles
+  /roles/{role}:
+    patch:
+      consumes:
+      - application/json
+      description: Update a role. Protected route
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Update a role
+      tags:
+      - Roles
+  /session:
+    get:
+      consumes:
+      - application/json
+      description: Get the current session using the access token
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      summary: Get current session
+      tags:
+      - Auth
+  /token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh the access token with the refresh token
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      summary: Refresh acess token
+      tags:
+      - Auth
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: List all users. Admin only route
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: List all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      summary: Create user
+      tags:
+      - Users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get a specific user
+        If the user has set the profile visibility as public then it is free to view by anyone. If the profile is set to be private, then regular users will not gain the access to this resource.
+        However, admin users can still bypass this protection
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Get a specific user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Update a user. Admin only route
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Update a user
+      tags:
+      - Users
+  /users/{id}/roles:
+    post:
+      consumes:
+      - application/json
+      description: Add a role to the user
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Add a role to the user
+      tags:
+      - Users
+  /users/{id}/roles/{role}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an existing role from the user
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Remove an existing role from the user
+      tags:
+      - Users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current user
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Get current user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Update current user details such as username, social links, etc.
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Update current user
+      tags:
+      - Users
+  /users/me/password:
+    patch:
+      consumes:
+      - application/json
+      description: Change password of current user
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error
+          schema:
+            type: object
+      security:
+      - AccessToken: []
+      summary: Change password of current user
+      tags:
+      - Users
+produces:
+- application/json
 schemes:
 - https
 - http

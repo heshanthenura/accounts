@@ -30,11 +30,17 @@ func parseTokenAndGetUser(token string) (u *models.UserModel, err error) {
 	name, nameOk := claims["name"].(string)
 	email, emailOk := claims["email"].(string)
 
-	// https://stackoverflow.com/questions/57032662/how-to-check-roles-claim-array-of-values-of-a-jwt-for-a-certain-value
-	r := claims["roles"].([]any)
-	roles := make([]string, len(r))
-	for i, role := range r {
-		roles[i] = role.(string)
+	rawRoles, ok := claims["roles"].([]any)
+	if !ok {
+		return nil, errors.New("invalid token")
+	}
+	roles := make([]string, len(rawRoles))
+	for i, role := range rawRoles {
+		roleStr, ok := role.(string)
+		if !ok {
+			return nil, errors.New("invalid token")
+		}
+		roles[i] = roleStr
 	}
 
 	if id == uuid.Nil || !nameOk || !emailOk || name == "" || email == "" {
@@ -48,7 +54,7 @@ func AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			next.ServeHTTP(w, r)
+			helpers.Response(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
 		split := strings.Split(authHeader, " ")

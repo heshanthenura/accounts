@@ -70,6 +70,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	if requestBody.Email == "" || requestBody.Password == "" {
 		helpers.Response(w, http.StatusBadRequest, "email and password cannot be empty")
+		return
 	}
 
 	accessToken, refreshToken, err := models.UserModel{}.Login(requestBody.Email, requestBody.Password)
@@ -101,7 +102,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // @Failure     500 {object} object "Server error"
 // @Router      /logout [POST]
 func Logout(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Logout"))
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	helpers.Response(w, http.StatusOK, http.StatusText(http.StatusOK))
 }
 
 func getAccessTokenFromRefresh(refreshToken string) (string, error) {
